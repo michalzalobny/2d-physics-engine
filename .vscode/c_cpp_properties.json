@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/opt/homebrew/Cellar/sdl2/2.30.2/include/SDL2",
+        "/opt/homebrew/Cellar/sdl2_gfx/1.0.4/include",
+        "/opt/homebrew/Cellar/sdl2_image/2.8.2_1/include",
+        "/opt/homebrew/Cellar/sdl2/2.30.2/include"
+      ],
+      "browse": {
+        "path": [
+          "${workspaceFolder}/**",
+          "/opt/homebrew/Cellar/sdl2/2.30.2/include/SDL2",
+          "/opt/homebrew/Cellar/sdl2_gfx/1.0.4/include",
+          "/opt/homebrew/Cellar/sdl2_image/2.8.2_1/include"
+        ]
+      },
+      "defines": [],
+      "macFrameworkPath": ["/System/Library/Frameworks"],
+      "compilerPath": "/usr/bin/clang++",
+      "cStandard": "c11",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "macos-clang-x64"
+    }
+  ],
+  "version": 4
+}
