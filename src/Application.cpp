@@ -38,7 +38,9 @@ void Application::Input() {
 // Update function (called several times per second to update objects)
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Update() {
-    // TODO: update all objects in the scene
+    particle->velocity = Vec2(2.0, 0.0);
+
+    particle->position += particle->velocity;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
