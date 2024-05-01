@@ -14,8 +14,9 @@ class Application {
         bool leftMouseButtonDown = false;
 
         Vec2 anchor;
-        float k = 100;
-        float restLength = 400;
+        float k = 300;
+        float restLength = 15;
+        const int NUM_PARTICLES = 15;
 
     public:
         Application() = default;
