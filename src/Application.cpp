@@ -12,8 +12,7 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
-    Body* body = new Body(Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
-    body->radius = 4;
+    Body* body = new Body(CircleShape(50), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
     bodies.push_back(body);
 }
 
@@ -72,19 +71,22 @@ void Application::Update() {
 
     // Check the boundaries of the window applying a hardcoded bounce flip in velocity
     for (auto body: bodies) {
-        if (body->position.x - body->radius <= 0) {
-            body->position.x = body->radius;
-            body->velocity.x *= -0.9;
-        } else if (body->position.x + body->radius >= Graphics::Width()) {
-            body->position.x = Graphics::Width() - body->radius;
-            body->velocity.x *= -0.9;
-        }
-        if (body->position.y - body->radius <= 0) {
-            body->position.y = body->radius;
-            body->velocity.y *= -0.9;
-        } else if (body->position.y + body->radius >= Graphics::Height()) {
-            body->position.y = Graphics::Height() - body->radius;
-            body->velocity.y *= -0.9;
+        if (body->shape->GetType() == CIRCLE) {
+            CircleShape* circleShape = (CircleShape*) body->shape;
+            if (body->position.x - circleShape->radius <= 0) {
+                body->position.x = circleShape->radius;
+                body->velocity.x *= -0.9;
+            } else if (body->position.x + circleShape->radius >= Graphics::Width()) {
+                body->position.x = Graphics::Width() - circleShape->radius;
+                body->velocity.x *= -0.9;
+            }
+            if (body->position.y - circleShape->radius <= 0) {
+                body->position.y = circleShape->radius;
+                body->velocity.y *= -0.9;
+            } else if (body->position.y + circleShape->radius >= Graphics::Height()) {
+                body->position.y = Graphics::Height() - circleShape->radius;
+                body->velocity.y *= -0.9;
+            }
         }
     }
 }
@@ -95,10 +97,19 @@ void Application::Update() {
 void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
 
+    static float angle = 0.0;
+
     // Draw all bodies
     for (auto body: bodies) {
-        Graphics::DrawFillCircle(body->position.x, body->position.y, body->radius, 0xFFFFFFFF);
+        if (body->shape->GetType() == CIRCLE) {
+            CircleShape* circleShape = (CircleShape*) body->shape;
+            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, angle, 0xFFFFFFFF);
+        } else {
+            // TODO: Draw other types of shapes
+        }
     }
+
+    angle += 0.01;
 
     Graphics::RenderFrame();
 }
