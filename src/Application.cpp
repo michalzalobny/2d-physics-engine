@@ -12,8 +12,8 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
-    Body* body = new Body(CircleShape(50), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
-    bodies.push_back(body);
+    Body* box = new Body(BoxShape(200, 100), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
+    bodies.push_back(box);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,17 +60,16 @@ void Application::Update() {
     // Apply forces to the bodies
     for (auto body: bodies) {
         // Apply the weight force
-        Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
-        body->AddForce(weight);
+        // Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
+        // body->AddForce(weight);
 
-        float torque = 20;
+        float torque = 200;
         body->AddTorque(torque);
     }
 
     // Integrate the acceleration and velocity to estimate the new position
     for (auto body: bodies) {
-        body->IntegrateLinear(deltaTime);
-        body->IntegrateAngular(deltaTime);
+        body->Update(deltaTime);
     }
 
     // Check the boundaries of the window applying a hardcoded bounce flip in velocity
@@ -106,8 +105,10 @@ void Application::Render() {
         if (body->shape->GetType() == CIRCLE) {
             CircleShape* circleShape = (CircleShape*) body->shape;
             Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->rotation, 0xFFFFFFFF);
-        } else {
-            // TODO: Draw other types of shapes
+        }
+        if (body->shape->GetType() == BOX) {
+            BoxShape* boxShape = (BoxShape*) body->shape;
+            Graphics::DrawPolygon(body->position.x, body->position.y, boxShape->worldVertices, 0xFFFFFFFF);
         }
     }
 
