@@ -62,11 +62,15 @@ void Application::Update() {
         // Apply the weight force
         Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
         body->AddForce(weight);
+
+        float torque = 20;
+        body->AddTorque(torque);
     }
 
     // Integrate the acceleration and velocity to estimate the new position
     for (auto body: bodies) {
-        body->Integrate(deltaTime);
+        body->IntegrateLinear(deltaTime);
+        body->IntegrateAngular(deltaTime);
     }
 
     // Check the boundaries of the window applying a hardcoded bounce flip in velocity
@@ -97,19 +101,15 @@ void Application::Update() {
 void Application::Render() {
     Graphics::ClearScreen(0xFF0F0721);
 
-    static float angle = 0.0;
-
     // Draw all bodies
     for (auto body: bodies) {
         if (body->shape->GetType() == CIRCLE) {
             CircleShape* circleShape = (CircleShape*) body->shape;
-            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, angle, 0xFFFFFFFF);
+            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->rotation, 0xFFFFFFFF);
         } else {
             // TODO: Draw other types of shapes
         }
     }
-
-    angle += 0.01;
 
     Graphics::RenderFrame();
 }
