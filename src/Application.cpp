@@ -35,7 +35,8 @@ void Application::Input() {
             case SDL_MOUSEBUTTONDOWN:
                 int x, y;
                 SDL_GetMouseState(&x, &y);
-                Body* smallBall = new Body(CircleShape(20), x, y, 1.0);
+                Body* smallBall = new Body(CircleShape(40), x, y, 1.0);
+                smallBall->restitution = 0.2;
                 bodies.push_back(smallBall);
                 break;
         }
@@ -65,12 +66,12 @@ void Application::Update() {
     // Apply forces to the bodies
     for (auto body: bodies) {
         // Apply the weight force
-        // Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
-        // body->AddForce(weight);
+        Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
+        body->AddForce(weight);
 
         // Apply the wind force
-        // Vec2 wind = Vec2(20.0 * PIXELS_PER_METER, 0.0);
-        // body->AddForce(wind);
+        Vec2 wind = Vec2(2.0 * PIXELS_PER_METER, 0.0);
+        body->AddForce(wind);
     }
 
     // Integrate the acceleration and velocity to estimate the new position
@@ -89,8 +90,8 @@ void Application::Update() {
             Contact contact;
 
             if (CollisionDetection::IsColliding(a, b, contact)) {
-                // Resolve the collision using the projection method
-                contact.ResolvePenetration();
+                // Resolve the collision using the impulse method
+                contact.ResolveCollision();
 
                 // Draw debug contact information
                 Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
@@ -134,7 +135,7 @@ void Application::Render() {
 
         if (body->shape->GetType() == CIRCLE) {
             CircleShape* circleShape = (CircleShape*) body->shape;
-            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->rotation, color);
+            Graphics::DrawFillCircle(body->position.x, body->position.y, circleShape->radius, 0xFFFFFFFF);
         }
         if (body->shape->GetType() == BOX) {
             BoxShape* boxShape = (BoxShape*) body->shape;
