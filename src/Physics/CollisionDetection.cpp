@@ -1,13 +1,18 @@
 #include "CollisionDetection.h"
+#include <limits>
 
 bool CollisionDetection::IsColliding(Body* a, Body* b, Contact& contact) {
     bool aIsCircle = a->shape->GetType() == CIRCLE;
     bool bIsCircle = b->shape->GetType() == CIRCLE;
+    bool aIsPolygon = a->shape->GetType() == POLYGON || a->shape->GetType() == BOX;
+    bool bIsPolygon = b->shape->GetType() == POLYGON || b->shape->GetType() == BOX;
 
     if (aIsCircle && bIsCircle) {
         return IsCollidingCircleCircle(a, b, contact);
     }
-
+    if (aIsPolygon && bIsPolygon) {
+        return IsCollidingPolygonPolygon(a, b, contact);
+    }
     return false;
 }
 
@@ -38,4 +43,14 @@ bool CollisionDetection::IsCollidingCircleCircle(Body* a, Body* b, Contact& cont
     return true;
 }
 
-// TODO: Implement other methods to check collision between different shapes
+bool CollisionDetection::IsCollidingPolygonPolygon(Body* a, Body* b, Contact& contact) {
+    const PolygonShape* aPolygonShape = (PolygonShape*) a->shape;
+    const PolygonShape* bPolygonShape = (PolygonShape*) b->shape;
+    if (aPolygonShape->FindMinSeparation(bPolygonShape) >= 0) {
+        return false;
+    }
+    if (bPolygonShape->FindMinSeparation(aPolygonShape) >= 0) {
+        return false;
+    }
+    return true;
+}

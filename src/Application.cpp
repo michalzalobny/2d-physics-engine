@@ -14,8 +14,12 @@ bool Application::IsRunning() {
 void Application::Setup() {
     running = Graphics::OpenWindow();
 
-    Body* bigBall = new Body(CircleShape(200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 0.0);
-    bodies.push_back(bigBall);
+    Body* boxA = new Body(BoxShape(200, 200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
+    Body* boxB = new Body(BoxShape(200, 200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
+    boxA->angularVelocity = 0.4;
+    boxB->angularVelocity = 0.1;
+    bodies.push_back(boxA);
+    bodies.push_back(boxB);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,12 +36,11 @@ void Application::Input() {
                 if (event.key.keysym.sym == SDLK_ESCAPE)
                     running = false;
                 break;
-            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEMOTION:
                 int x, y;
                 SDL_GetMouseState(&x, &y);
-                Body* smallBall = new Body(CircleShape(40), x, y, 1.0);
-                smallBall->restitution = 0.2;
-                bodies.push_back(smallBall);
+                bodies[0]->position.x = x;
+                bodies[0]->position.y = y;
                 break;
         }
     }
@@ -64,15 +67,15 @@ void Application::Update() {
     timePreviousFrame = SDL_GetTicks();
 
     // Apply forces to the bodies
-    for (auto body: bodies) {
+    // for (auto body: bodies) {
         // Apply the weight force
-        Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
-        body->AddForce(weight);
+        // Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
+        // body->AddForce(weight);
 
         // Apply the wind force
-        Vec2 wind = Vec2(2.0 * PIXELS_PER_METER, 0.0);
-        body->AddForce(wind);
-    }
+        // Vec2 wind = Vec2(2.0 * PIXELS_PER_METER, 0.0);
+        // body->AddForce(wind);
+    // }
 
     // Integrate the acceleration and velocity to estimate the new position
     for (auto body: bodies) {
@@ -91,7 +94,7 @@ void Application::Update() {
 
             if (CollisionDetection::IsColliding(a, b, contact)) {
                 // Resolve the collision using the impulse method
-                contact.ResolveCollision();
+                // contact.ResolveCollision();
 
                 // Draw debug contact information
                 Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
@@ -135,11 +138,11 @@ void Application::Render() {
 
         if (body->shape->GetType() == CIRCLE) {
             CircleShape* circleShape = (CircleShape*) body->shape;
-            Graphics::DrawFillCircle(body->position.x, body->position.y, circleShape->radius, 0xFFFFFFFF);
+            Graphics::DrawFillCircle(body->position.x, body->position.y, circleShape->radius, color);
         }
         if (body->shape->GetType() == BOX) {
             BoxShape* boxShape = (BoxShape*) body->shape;
-            Graphics::DrawPolygon(body->position.x, body->position.y, boxShape->worldVertices, 0xFFFFFFFF);
+            Graphics::DrawPolygon(body->position.x, body->position.y, boxShape->worldVertices, color);
         }
     }
 
