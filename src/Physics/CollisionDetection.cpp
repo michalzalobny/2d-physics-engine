@@ -46,11 +46,28 @@ bool CollisionDetection::IsCollidingCircleCircle(Body* a, Body* b, Contact& cont
 bool CollisionDetection::IsCollidingPolygonPolygon(Body* a, Body* b, Contact& contact) {
     const PolygonShape* aPolygonShape = (PolygonShape*) a->shape;
     const PolygonShape* bPolygonShape = (PolygonShape*) b->shape;
-    if (aPolygonShape->FindMinSeparation(bPolygonShape) >= 0) {
+    Vec2 aAxis, bAxis;
+    Vec2 aPoint, bPoint;
+    float abSeparation = aPolygonShape->FindMinSeparation(bPolygonShape, aAxis, aPoint);
+    if (abSeparation >= 0) {
         return false;
     }
-    if (bPolygonShape->FindMinSeparation(aPolygonShape) >= 0) {
+    float baSeparation = bPolygonShape->FindMinSeparation(aPolygonShape, bAxis, bPoint);
+    if (baSeparation >= 0) {
         return false;
+    }
+    contact.a = a;
+    contact.b = b;
+    if (abSeparation > baSeparation) {
+        contact.depth = -abSeparation;
+        contact.normal = aAxis.Normal();
+        contact.start = aPoint;
+        contact.end = aPoint + contact.normal * contact.depth;
+    } else {
+        contact.depth = -baSeparation;
+        contact.normal = -bAxis.Normal();
+        contact.start = bPoint - contact.normal * contact.depth;
+        contact.end = bPoint;
     }
     return true;
 }
