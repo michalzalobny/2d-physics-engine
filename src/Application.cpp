@@ -13,15 +13,17 @@ bool Application::IsRunning() {
 ///////////////////////////////////////////////////////////////////////////////
 void Application::Setup() {
     running = Graphics::OpenWindow();
+    
+    // Add a floor to stop falling objects
+    Body* floor = new Body(BoxShape(Graphics::Width() - 50, 50), Graphics::Width() / 2.0, Graphics::Height() - 50, 0.0);
+    floor->restitution = 0.2;
+    bodies.push_back(floor);
 
-    Body* boxA = new Body(BoxShape(200, 200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
-    Body* boxB = new Body(BoxShape(200, 200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 1.0);
-    //boxA->angularVelocity = 0.4;
-    //boxB->angularVelocity = 0.1;
-    boxA->rotation = 1.3;
-    boxA->rotation = 2.3;
-    bodies.push_back(boxA);
-    bodies.push_back(boxB);
+    // Add a static box so other boxes can collide
+    Body* bigBox = new Body(BoxShape(200, 200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 0.0);
+    bigBox->rotation = 1.4;
+    bigBox->restitution = 0.5;
+    bodies.push_back(bigBox);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -38,11 +40,11 @@ void Application::Input() {
                 if (event.key.keysym.sym == SDLK_ESCAPE)
                     running = false;
                 break;
-            case SDL_MOUSEMOTION:
+            case SDL_MOUSEBUTTONDOWN:
                 int x, y;
                 SDL_GetMouseState(&x, &y);
-                bodies[0]->position.x = x;
-                bodies[0]->position.y = y;
+                Body* box = new Body(BoxShape(50, 50), x, y, 1.0);
+                bodies.push_back(box);
                 break;
         }
     }
@@ -69,15 +71,11 @@ void Application::Update() {
     timePreviousFrame = SDL_GetTicks();
 
     // Apply forces to the bodies
-    // for (auto body: bodies) {
+    for (auto body: bodies) {
         // Apply the weight force
-        // Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
-        // body->AddForce(weight);
-
-        // Apply the wind force
-        // Vec2 wind = Vec2(2.0 * PIXELS_PER_METER, 0.0);
-        // body->AddForce(wind);
-    // }
+        Vec2 weight = Vec2(0.0, body->mass * 9.8 * PIXELS_PER_METER);
+        body->AddForce(weight);
+    }
 
     // Integrate the acceleration and velocity to estimate the new position
     for (auto body: bodies) {
@@ -96,7 +94,7 @@ void Application::Update() {
 
             if (CollisionDetection::IsColliding(a, b, contact)) {
                 // Resolve the collision using the impulse method
-                // contact.ResolveCollision();
+                contact.ResolveCollision();
 
                 // Draw debug contact information
                 Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
