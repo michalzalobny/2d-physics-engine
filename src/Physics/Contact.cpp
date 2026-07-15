@@ -19,8 +19,9 @@ void Contact::ResolveCollision() {
     // Apply positional correction using the projection method
     ResolvePenetration();
     
-    // Define elasticity (coefficient of restitution e)
+    // Define coefficient of restitution (elasticity) and friction
     float e = std::min(a->restitution, b->restitution);
+    float f = std::min(a->friction, b->friction);
     
     // Calculate the relative velocity between the two objects
     Vec2 ra = end - a->position;
@@ -29,16 +30,23 @@ void Contact::ResolveCollision() {
     Vec2 vb = b->velocity + Vec2(-b->angularVelocity * rb.y, b->angularVelocity * rb.x);
     const Vec2 vrel = va - vb;
 
-    // Calculate the relative velocity along the normal collision vector
+    // Now we proceed to calculate the collision impulse along the normal
     float vrelDotNormal = vrel.Dot(normal);
+    const Vec2 impulseDirectionN = normal;
+    const float impulseMagnitudeN = -(1 + e) * vrelDotNormal / ((a->invMass + b->invMass) + ra.Cross(normal) * ra.Cross(normal) * a->invI + rb.Cross(normal) * rb.Cross(normal) * b->invI);
+    Vec2 jN = impulseDirectionN * impulseMagnitudeN;
+   
+    // Now we proceed to calculate the collision impulse along the tangent
+    Vec2 tangent = normal.Normal();
+    float vrelDotTangent = vrel.Dot(tangent);
+    const Vec2 impulseDirectionT = tangent;
+    const float impulseMagnitudeT = f * -(1 + e) * vrelDotTangent / ((a->invMass + b->invMass) + ra.Cross(tangent) * ra.Cross(tangent) * a->invI + rb.Cross(tangent) * rb.Cross(tangent) * b->invI);
+    Vec2 jT = impulseDirectionT * impulseMagnitudeT;
 
-    // Now we proceed to calculate the collision impulse
-    const Vec2 impulseDirection = normal;
-    const float impulseMagnitude = -(1 + e) * vrelDotNormal / ((a->invMass + b->invMass) + ra.Cross(normal) * ra.Cross(normal) * a->invI + rb.Cross(normal) * rb.Cross(normal) * b->invI);
-    
-    Vec2 jn = impulseDirection * impulseMagnitude;
-    
+    // Calculate the final impulse j combining normal and tangent impulses
+    Vec2 j = jN + jT;
+
     // Apply the impulse vector to both objects in opposite direction
-    a->ApplyImpulse(jn, ra);
-    b->ApplyImpulse(-jn, rb);
+    a->ApplyImpulse(j, ra);
+    b->ApplyImpulse(-j, rb);
 }
