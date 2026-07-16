@@ -26,11 +26,16 @@ float CircleShape::GetMomentOfInertia() const {
 }
 
 PolygonShape::PolygonShape(const std::vector<Vec2> vertices) {
-    // TODO: ...
+    // Initialize the vertices of the polygon shape
+    for (auto vertex: vertices) {
+        localVertices.push_back(vertex);
+        worldVertices.push_back(vertex);
+    }
+    std::cout << "PolygonShape constructor called!" << std::endl;
 }
 
 PolygonShape::~PolygonShape() {
-    // TODO: ...
+    std::cout << "PolygonShape destructor called!" << std::endl;
 }
 
 ShapeType PolygonShape::GetType() const {
@@ -43,7 +48,8 @@ Shape* PolygonShape::Clone() const {
 
 float PolygonShape::GetMomentOfInertia() const {
     // TODO:
-    return 0.0;
+    // We need to compute the moment of inertia of the polygon correctly!!!
+    return 5000;
 }
 
 Vec2 PolygonShape::EdgeAt(int index) const {

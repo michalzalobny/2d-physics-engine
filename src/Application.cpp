@@ -18,16 +18,16 @@ void Application::Setup() {
     Body* floor = new Body(BoxShape(Graphics::Width() - 50, 50), Graphics::Width() / 2.0, Graphics::Height() - 50, 0.0);
     Body* leftWall = new Body(BoxShape(50, Graphics::Height() - 100), 50, Graphics::Height() / 2.0 - 25, 0.0);
     Body* rightWall = new Body(BoxShape(50, Graphics::Height() - 100), Graphics::Width() - 50, Graphics::Height() / 2.0 - 25, 0.0);
-    floor->restitution = 0.2;
+    floor->restitution = 0.5;
     leftWall->restitution = 0.2;
     rightWall->restitution = 0.2;
     bodies.push_back(floor);
     bodies.push_back(leftWall);
     bodies.push_back(rightWall);
 
-    // Add a static box so other boxes can collide
+    // Add a static box so other objects can collide
     Body* bigBox = new Body(BoxShape(200, 200), Graphics::Width() / 2.0, Graphics::Height() / 2.0, 0.0);
-    bigBox->restitution = 0.1;
+    bigBox->restitution = 0.7;
     bigBox->rotation = 1.4;
     bodies.push_back(bigBox);
 }
@@ -45,13 +45,23 @@ void Application::Input() {
             case SDL_KEYDOWN:
                 if (event.key.keysym.sym == SDLK_ESCAPE)
                     running = false;
+                if (event.key.keysym.sym == SDLK_d)
+                    debug = !debug;
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 int x, y;
                 SDL_GetMouseState(&x, &y);
-                Body* box = new Body(BoxShape(50, 50), x, y, 1.0);
-                box->restitution = 0.2;
-                bodies.push_back(box);
+                std::vector<Vec2> vertices = {
+                    Vec2(20, 60),
+                    Vec2(-40, 20),
+                    Vec2(-20, -60),
+                    Vec2(20, -60),
+                    Vec2(40, 20)
+                };
+                Body* poly = new Body(PolygonShape(vertices), x, y, 2.0);
+                poly->restitution = 0.1;
+                poly->friction = 0.7;
+                bodies.push_back(poly);
                 break;
         }
     }
@@ -103,11 +113,13 @@ void Application::Update() {
                 contact.ResolveCollision();
 
                 // Draw debug contact information
-                Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
-                Graphics::DrawFillCircle(contact.end.x, contact.end.y, 3, 0xFFFF00FF);
-                Graphics::DrawLine(contact.start.x, contact.start.y, contact.start.x + contact.normal.x * 15, contact.start.y + contact.normal.y * 15, 0xFFFF00FF);
-                a->isColliding = true;
-                b->isColliding = true;
+                if (debug) {
+                    Graphics::DrawFillCircle(contact.start.x, contact.start.y, 3, 0xFFFF00FF);
+                    Graphics::DrawFillCircle(contact.end.x, contact.end.y, 3, 0xFFFF00FF);
+                    Graphics::DrawLine(contact.start.x, contact.start.y, contact.start.x + contact.normal.x * 15, contact.start.y + contact.normal.y * 15, 0xFFFF00FF);
+                    a->isColliding = true;
+                    b->isColliding = true;
+                }
             }
         }
     }
@@ -119,15 +131,17 @@ void Application::Update() {
 void Application::Render() {
     // Draw all bodies
     for (auto body: bodies) {
-        Uint32 color = body->isColliding ? 0xFF0000FF : 0xFFFFFFFF;
-
         if (body->shape->GetType() == CIRCLE) {
             CircleShape* circleShape = (CircleShape*) body->shape;
-            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->rotation, color);
+            Graphics::DrawCircle(body->position.x, body->position.y, circleShape->radius, body->rotation, 0xFF00FF00);
         }
         if (body->shape->GetType() == BOX) {
             BoxShape* boxShape = (BoxShape*) body->shape;
-            Graphics::DrawPolygon(body->position.x, body->position.y, boxShape->worldVertices, color);
+            Graphics::DrawPolygon(body->position.x, body->position.y, boxShape->worldVertices, 0xFF00FF00);
+        }
+        if (body->shape->GetType() == POLYGON) {
+            PolygonShape* polygonShape = (PolygonShape*) body->shape;
+            Graphics::DrawPolygon(body->position.x, body->position.y, polygonShape->worldVertices, 0xFF00FF00);
         }
     }
 
